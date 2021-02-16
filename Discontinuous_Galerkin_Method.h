@@ -1,8 +1,5 @@
 #ifndef OUTPUTFILE_H
 #define OUTPUTFILE_H
-
-# Single Header File 
-
 struct integratorResults { 
     double* xij;
     double* Lgx;
@@ -11,16 +8,14 @@ void writeToFile(integratorResults Result, integratorResults Result2, integrator
 #endif
 
 
-struct legendreResults { 
-    double Ln; 
-    double LdashN; 
-};
 
-struct nodesAndWeightsResult { 
-    double* x; 
-    double* w; 
-};
+// Function Templates
+nodesAndWeightsResult LegendreGaussNodesAndWeights(int N);
+double Bisection(int N ,double a,double b, double tol, double max_iter);
+legendreResults legendreFunction(int N, double x);
+int AlmostEqual(double a, double b);
 
+// Matrix Memory Allocations
 double** AllocateMatrixMemory(int rows, int cols){
     double** A; 
     A = new double* [rows];
