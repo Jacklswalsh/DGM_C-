@@ -8,7 +8,6 @@ void writeToFile(integratorResults Result, integratorResults Result2, integrator
 #endif
 
 
-
 // Function Templates
 nodesAndWeightsResult LegendreGaussNodesAndWeights(int N);
 double Bisection(int N ,double a,double b, double tol, double max_iter);
@@ -19,8 +18,9 @@ int AlmostEqual(double a, double b);
 double** AllocateMatrixMemory(int rows, int cols){
     double** A; 
     A = new double* [rows];
-    for(int i = 0; i<rows; ++i){
-        A[i] = new double [cols];
+    A[0] = new double [rows*cols];
+    for(int i = 1; i<rows; ++i){
+        A[i] = &A[0][i*cols];
     } 
     return A;
 }
