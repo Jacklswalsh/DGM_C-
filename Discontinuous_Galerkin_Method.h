@@ -7,7 +7,6 @@ struct integratorResults {
 void writeToFile(integratorResults Result, integratorResults Result2, integratorResults Result3, int N);
 #endif
 
-
 // Function Templates
 nodesAndWeightsResult LegendreGaussNodesAndWeights(int N);
 double Bisection(int N ,double a,double b, double tol, double max_iter);

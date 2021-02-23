@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cfloat>
 
+
 nodesAndWeightsResult LegendreGaussNodesAndWeights(int N){
     double* xi = new double [N];
     double* w = new double [N];

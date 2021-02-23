@@ -1,6 +1,7 @@
 #include "output_file.h"
 #include "legendregauss.h"
 #include "Discontinuous_Galerkin_Method.h"
+#include "mesh_generator.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -234,6 +235,10 @@ int main(){
     double Nout = N;
     double T=0;
     // double T2 = 1;
+
+    MeshGeneration Mesh;
+    Mesh.mesh_generation(4, -8.0, 8.0);
+    Mesh.print_mesh(0);
 
     integratorResults Result = Integrator(Nt, Nout, T, DGM);
     integratorResults Result2 = Integrator(Nt*4, Nout, double(0.5), DGM2);
