@@ -1,8 +1,11 @@
 #include "output_file.h"
 #include "legendregauss.h"
 #include "Discontinuous_Galerkin_Method.h"
+#include "rarrayheaders/rarray.h"
+#include "rarrayheaders/rarrayio.h"
 #include "mesh_generator.h"
 #include <iostream>
+#include <unordered_map>
 #include <fstream>
 #include <cmath>
 #include <cfloat>
@@ -23,7 +26,13 @@ class NDGM{
 
     public:
         int N;
+        int K;
+        std::list<std::vector<double>> xk;
+        std::list<double> split_elems;
+
         nodesAndWeightsResult GLnodes_weights;
+        std::unordered_map<int, double> N_dict;
+        int Nmax;
         double c = 1.0;
         double* lj1;
         double* ljn1;
@@ -31,10 +40,39 @@ class NDGM{
         double** D;
         double* xij;
 
-        NDGM(int N){
+
+        NDGM(int N, int K, std::list<std::vector<double>> xk){
             // initialise solution & Legendre Gauss Nodes and Weights
             this->N = N;
+            this->K = K;
+
+            this->split_elems = split_elems;
+            this->Nmax = Nmax;
+
+            this->N_dict = N_dict;
+
+            this->xk = xk;
+            rarray<double, 1> deltax(this->K);
+            // for (int k=0;k<deltax.extent(0);k++){
+            //     // deltax[k] = this->xk[k][1]-this->xk[k][0]; 
+            //     std::cout << this->xk[k] << std::endl; };
+
+
+            std::list<std::vector<double>>::iterator it;
+            int k=0;
+            for (it = this->xk.begin(); it != this->xk.end(); ++it){
+                std::vector<double> element = *it;
+                deltax[k] = element[1]-element[0];
+                k++; 
+                // std::cout << element[0] << std::endl;
+            };
+                
+            for (int j=0; j< deltax.extent(0); j++){
+                std::cout << "New write: " << std::endl;
+                std::cout << deltax[j] << std::endl; };
+
             this->xij = new double [N]; // Solution Array
+
             GLnodes_weights = LegendreGaussNodesAndWeights(N);
             Wb = barycentricWeights(N, GLnodes_weights.x);
             this->lj1 = lagrangeInterpolatingPolynomials(double(1.0), GLnodes_weights.x, Wb);
@@ -49,6 +87,12 @@ class NDGM{
                     this->Dhij[i][j] = -this->D[j][i] * (GLnodes_weights.w[j]/GLnodes_weights.w[i]);
                     // std::cout << "i: " << i << "   j: " << j << "   Dhij: " << Dhij[i][j] <<std::endl;
                 };
+            };
+        }
+
+        void initialise_N(){
+            for (auto v : this->xk){
+                this->N_dict[v[0]] = this->N;
             };
         }
     
@@ -226,30 +270,34 @@ integratorResults Integrator(double Nt, double Nout, double T, NDGM dg){
 }
 
 int main(){
+    // Mesh generation
+    MeshGeneration Mesh;
+    Mesh.mesh_generation(4, -8.0, 0.0);
+    Mesh.mesh_generation(3, 0.0, 8.0);
+    // Mesh.print_mesh(0);
+
 
     int N = 30;
-    NDGM DGM(N);
-    NDGM DGM2(N);
-    NDGM DGM3(N);
+    NDGM DGM(N, Mesh.mesh.size(), Mesh.mesh);
+    // NDGM DGM2(N, 1, Mesh.mesh);
+    // NDGM DGM3(N, 1, Mesh.mesh);
     double Nt = 1000;
     double Nout = N;
     double T=0;
     // double T2 = 1;
 
-    MeshGeneration Mesh;
-    Mesh.mesh_generation(4, -8.0, 8.0);
-    Mesh.print_mesh(0);
 
-    integratorResults Result = Integrator(Nt, Nout, T, DGM);
-    integratorResults Result2 = Integrator(Nt*4, Nout, double(0.5), DGM2);
-    integratorResults Result3 = Integrator(Nt*4, Nout, double(1.0), DGM3);
+
+    // integratorResults Result = Integrator(Nt, Nout, T, DGM);
+    // integratorResults Result2 = Integrator(Nt*4, Nout, double(0.5), DGM2);
+    // integratorResults Result3 = Integrator(Nt*4, Nout, double(1.0), DGM3);
 
     // for (int i=0; i<5; i++){
     // std::cout << "X:  " << Result.Lgx[i] << std::endl;
     // std::cout << "xij:  " << Result.xij[i] << std::endl;
     // };
 
-    writeToFile(Result, Result2, Result3, N);
+    // writeToFile(Result, Result2, Result3, N);
 
     // delete[] DGM.xij;
     // delete[] DGM.lj1;
